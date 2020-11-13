@@ -6,5 +6,4 @@ import "../../utility/interfaces/IOwned.sol";
     Converter Anchor interface
 */
 interface IConverterAnchor is IOwned {
-
 }

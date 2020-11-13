@@ -36,18 +36,11 @@ const MIN_RETURN = new BN(1);
 
 const VERSIONS = [9, 10, 11, 23];
 
-contract('ConverterUpgrader', (accounts) => {
+contract('ConverterUpgrader', accounts => {
     const initWith1Reserve = async (deployer, version, activate) => {
         const anchor = await DSToken.new('Token1', 'TKN1', 0);
-        const converter = await ConverterHelper.new(
-            0,
-            anchor.address,
-            contractRegistry.address,
-            MAX_CONVERSION_FEE,
-            reserveToken1.address,
-            500000,
-            version
-        );
+        const converter = await ConverterHelper.new(0, anchor.address, contractRegistry.address, MAX_CONVERSION_FEE,
+            reserveToken1.address, 500000, version);
         const upgrader = await ConverterUpgrader.new(contractRegistry.address);
 
         await contractRegistry.registerAddress(registry.CONVERTER_UPGRADER, upgrader.address);
@@ -66,21 +59,15 @@ contract('ConverterUpgrader', (accounts) => {
 
     const initWith2Reserves = async (type, deployer, version, activate) => {
         const anchor = await DSToken.new('Token1', 'TKN1', 0);
-        const converter = await ConverterHelper.new(
-            type,
-            anchor.address,
-            contractRegistry.address,
-            MAX_CONVERSION_FEE,
-            reserveToken1.address,
-            500000,
-            version
-        );
+        const converter = await ConverterHelper.new(type, anchor.address, contractRegistry.address, MAX_CONVERSION_FEE,
+            reserveToken1.address, 500000, version);
         const upgrader = await ConverterUpgrader.new(contractRegistry.address);
 
         await contractRegistry.registerAddress(registry.CONVERTER_UPGRADER, upgrader.address);
         if (version) {
             await converter.addConnector(reserveToken2.address, 500000, false);
-        } else {
+        }
+        else {
             await converter.addReserve(reserveToken2.address, 500000);
         }
 
@@ -111,25 +98,14 @@ contract('ConverterUpgrader', (accounts) => {
         const upgrader = await ConverterUpgrader.new(contractRegistry.address);
         await contractRegistry.registerAddress(registry.CONVERTER_UPGRADER, upgrader.address);
 
-        const converter = await ConverterHelper.new(
-            2,
-            anchor.address,
-            contractRegistry.address,
-            MAX_CONVERSION_FEE,
-            reserveToken1.address,
-            500000
-        );
+        const converter = await ConverterHelper.new(2, anchor.address, contractRegistry.address, MAX_CONVERSION_FEE, reserveToken1.address, 500000);
         await converter.addReserve(reserveToken2.address, 500000);
         await converter.setConversionFee(CONVERSION_FEE);
 
         if (activate) {
             await anchor.transferOwnership(converter.address);
             await converter.acceptAnchorOwnership();
-            await converter.activate(
-                reserveToken1.address,
-                chainlinkPriceOracleA.address,
-                chainlinkPriceOracleB.address
-            );
+            await converter.activate(reserveToken1.address, chainlinkPriceOracleA.address, chainlinkPriceOracleB.address);
 
             await reserveToken1.approve(converter.address, RESERVE1_BALANCE);
             await reserveToken2.approve(converter.address, RESERVE2_BALANCE);
@@ -142,15 +118,8 @@ contract('ConverterUpgrader', (accounts) => {
 
     const initWithoutReserves = async (deployer, version, activate) => {
         const anchor = await DSToken.new('Token1', 'TKN1', 0);
-        const converter = await ConverterHelper.new(
-            0,
-            anchor.address,
-            contractRegistry.address,
-            MAX_CONVERSION_FEE,
-            ZERO_ADDRESS,
-            0,
-            version
-        );
+        const converter = await ConverterHelper.new(0, anchor.address, contractRegistry.address, MAX_CONVERSION_FEE,
+            ZERO_ADDRESS, 0, version);
         const upgrader = await ConverterUpgrader.new(contractRegistry.address);
 
         await contractRegistry.registerAddress(registry.CONVERTER_UPGRADER, upgrader.address);
@@ -170,14 +139,8 @@ contract('ConverterUpgrader', (accounts) => {
         }
 
         const anchor = await DSToken.new('Token1', 'TKN1', 0);
-        const converter = await ConverterHelper.new(
-            type,
-            anchor.address,
-            contractRegistry.address,
-            MAX_CONVERSION_FEE,
-            reserveToken1.address,
-            500000
-        );
+        const converter = await ConverterHelper.new(type, anchor.address, contractRegistry.address, MAX_CONVERSION_FEE,
+            reserveToken1.address, 500000);
         const upgrader = await ConverterUpgrader.new(contractRegistry.address);
 
         await contractRegistry.registerAddress(registry.CONVERTER_UPGRADER, upgrader.address);
@@ -209,18 +172,17 @@ contract('ConverterUpgrader', (accounts) => {
         // For versions 11 or higher, we just call upgrade on the converter.
         if (converter.upgrade) {
             res = await converter.upgrade({ from: accounts[0], ...options });
-        } else {
+        }
+        else {
             // For previous versions we transfer ownership to the upgrader, then call upgradeOld on the upgrader,
             // then accept ownership of the new and old converter. The end results should be the same.
             await converter.transferOwnership(upgrader.address);
-            res = await upgrader.upgradeOld(converter.address, web3.utils.asciiToHex(''), {
-                from: accounts[0],
-                ...options
-            });
+            res = await upgrader.upgradeOld(converter.address, web3.utils.asciiToHex(''),
+                { from: accounts[0], ...options });
             await converter.acceptOwnership();
         }
 
-        const logs = res.logs.filter((log) => log.event === 'ConverterUpgrade');
+        const logs = res.logs.filter(log => log.event === 'ConverterUpgrade');
         expect(logs.length).to.be.at.most(1);
 
         if (logs.length === 1) {
@@ -263,16 +225,15 @@ contract('ConverterUpgrader', (accounts) => {
             if (priceOracleAddres === ZERO_ADDRESS) {
                 state.tokenAOracle = ZERO_ADDRESS;
                 state.tokenBOracle = ZERO_ADDRESS;
-            } else {
+            }
+            else {
                 const priceOracle = await PriceOracle.at(priceOracleAddres);
                 state.tokenAOracle = await priceOracle.tokenAOracle.call();
                 state.tokenBOracle = await priceOracle.tokenBOracle.call();
             }
 
             for (let i = 0; i < state.reserveTokenCount.toNumber(); i++) {
-                state.reserveTokens[i].stakedBalance = await converter.reserveStakedBalance.call(
-                    state.reserveTokens[i].token
-                );
+                state.reserveTokens[i].stakedBalance = await converter.reserveStakedBalance.call(state.reserveTokens[i].token);
             }
         }
 
@@ -311,12 +272,8 @@ contract('ConverterUpgrader', (accounts) => {
         await converterFactory.registerTypedConverterFactory((await LiquidityPoolV2ConverterFactory.new()).address);
         await converterFactory.registerTypedConverterFactory((await StandardPoolConverterFactory.new()).address);
 
-        await converterFactory.registerTypedConverterAnchorFactory(
-            (await LiquidityPoolV2ConverterAnchorFactory.new()).address
-        );
-        await converterFactory.registerTypedConverterCustomFactory(
-            (await LiquidityPoolV2ConverterCustomFactory.new()).address
-        );
+        await converterFactory.registerTypedConverterAnchorFactory((await LiquidityPoolV2ConverterAnchorFactory.new()).address);
+        await converterFactory.registerTypedConverterCustomFactory((await LiquidityPoolV2ConverterCustomFactory.new()).address);
 
         const oracleWhitelist = await Whitelist.new();
         await contractRegistry.registerAddress(registry.CHAINLINK_ORACLE_WHITELIST, oracleWhitelist.address);
@@ -343,14 +300,13 @@ contract('ConverterUpgrader', (accounts) => {
         initType3WithETHReserve
     ];
 
-    const f = (a, b) => [].concat(...a.map((d) => b.map((e) => [].concat(d, e))));
+    const f = (a, b) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
     const cartesian = (a, b, ...c) => (b ? cartesian(f(a, b), ...c) : a);
     const product = cartesian(initFuncs, [...VERSIONS, null], [false, true]);
-    const combinations = product.filter(
-        ([init, version, active]) =>
-            !(init === initWithoutReserves && active) &&
-            !(init === initV1WithETHReserve && version) &&
-            !(init === initType3WithETHReserve && version)
+    const combinations = product.filter(([init, version, active]) =>
+        !(init === initWithoutReserves && active) &&
+        !(init === initV1WithETHReserve && version) &&
+        !(init === initType3WithETHReserve && version)
     );
 
     for (const [init, version, activate] of combinations) {
@@ -360,15 +316,15 @@ contract('ConverterUpgrader', (accounts) => {
                 let upgradedReserveTokens;
 
                 switch (init) {
-                    case initV1WithETHReserve:
-                    case initType3WithETHReserve:
-                        reserveTokens = [reserveToken1.address, ETH_RESERVE_ADDRESS];
-                        upgradedReserveTokens = reserveTokens;
-                        break;
-                    default:
-                        reserveTokens = [reserveToken1.address, reserveToken2.address];
-                        upgradedReserveTokens = reserveTokens;
-                        break;
+                case initV1WithETHReserve:
+                case initType3WithETHReserve:
+                    reserveTokens = [reserveToken1.address, ETH_RESERVE_ADDRESS];
+                    upgradedReserveTokens = reserveTokens;
+                    break;
+                default:
+                    reserveTokens = [reserveToken1.address, reserveToken2.address];
+                    upgradedReserveTokens = reserveTokens;
+                    break;
                 }
 
                 // Initial reserve balances are synced when the converter is being activated or during transfer to
@@ -406,9 +362,7 @@ contract('ConverterUpgrader', (accounts) => {
                     expect(oldConverterInitialState.reserveTokens[i].balance).to.be.bignumber.equal(reserveBalances[i]);
 
                     if (v2) {
-                        expect(oldConverterInitialState.reserveTokens[i].stakedBalance).to.be.bignumber.equal(
-                            stakedBalances[i]
-                        );
+                        expect(oldConverterInitialState.reserveTokens[i].stakedBalance).to.be.bignumber.equal(stakedBalances[i]);
                     }
                 }
 
@@ -431,20 +385,15 @@ contract('ConverterUpgrader', (accounts) => {
                 expect(oldConverterCurrentState.tokenOwner).to.be.eql(activate ? newConverter.address : deployer);
                 expect(oldConverterCurrentState.conversionFee).to.be.bignumber.equal(CONVERSION_FEE);
                 expect(oldConverterCurrentState.maxConversionFee).to.be.bignumber.equal(MAX_CONVERSION_FEE);
-                expect(oldConverterCurrentState.reserveTokenCount).to.be.bignumber.equal(
-                    oldConverterInitialState.reserveTokenCount
-                );
+                expect(oldConverterCurrentState.reserveTokenCount).to.be.bignumber.equal(oldConverterInitialState.reserveTokenCount);
 
                 for (let i = 0; i < oldConverterCurrentState.reserveTokenCount.toNumber(); ++i) {
-                    expect(oldConverterCurrentState.reserveTokens[i].token).to.be.eql(
-                        oldConverterInitialState.reserveTokens[i].token
-                    );
+                    expect(oldConverterCurrentState.reserveTokens[i].token).to.be.eql(oldConverterInitialState.reserveTokens[i].token);
                     expect(oldConverterCurrentState.reserveTokens[i].balance).to.be.bignumber.equal(new BN(0));
 
                     if (v2) {
-                        expect(oldConverterCurrentState.reserveTokens[i].stakedBalance).to.be.bignumber.equal(
-                            oldConverterInitialState.reserveTokens[i].stakedBalance
-                        );
+                        expect(oldConverterCurrentState.reserveTokens[i].stakedBalance).to.be.bignumber
+                            .equal(oldConverterInitialState.reserveTokens[i].stakedBalance);
                     }
                 }
 
@@ -460,20 +409,15 @@ contract('ConverterUpgrader', (accounts) => {
                 expect(newConverterCurrentState.tokenOwner).to.be.eql(activate ? newConverter.address : deployer);
                 expect(newConverterCurrentState.conversionFee).to.be.bignumber.equal(CONVERSION_FEE);
                 expect(newConverterCurrentState.maxConversionFee).to.be.bignumber.equal(MAX_CONVERSION_FEE);
-                expect(newConverterCurrentState.reserveTokenCount).to.be.bignumber.equal(
-                    oldConverterInitialState.reserveTokenCount
-                );
+                expect(newConverterCurrentState.reserveTokenCount).to.be.bignumber.equal(oldConverterInitialState.reserveTokenCount);
 
                 for (let i = 0; i < newConverterCurrentState.reserveTokenCount.toNumber(); ++i) {
-                    expect(newConverterCurrentState.reserveTokens[i].balance).to.be.bignumber.equal(
-                        upgradedReserveBalances[i]
-                    );
+                    expect(newConverterCurrentState.reserveTokens[i].balance).to.be.bignumber.equal(upgradedReserveBalances[i]);
                     expect(newConverterCurrentState.reserveTokens[i].token).to.be.eql(upgradedReserveTokens[i]);
 
                     if (v2) {
-                        expect(newConverterCurrentState.reserveTokens[i].stakedBalance).to.be.bignumber.equal(
-                            oldConverterInitialState.reserveTokens[i].stakedBalance
-                        );
+                        expect(newConverterCurrentState.reserveTokens[i].stakedBalance).to.be.bignumber
+                            .equal(oldConverterInitialState.reserveTokens[i].stakedBalance);
                     }
                 }
 

@@ -12,7 +12,7 @@ const trimNull = (str) => {
     return str.replace(/\u0000*$/, '');
 };
 
-contract('ContractRegistry', (accounts) => {
+contract('ContractRegistry', accounts => {
     let contractRegistry;
     const contractName1 = 'red';
     const contractName2 = 'blue';
@@ -42,17 +42,13 @@ contract('ContractRegistry', (accounts) => {
     });
 
     it('should revert when attempting to register the registry to the zero address', async () => {
-        await expectRevert(
-            contractRegistry.registerAddress(registry.CONTRACT_REGISTRY, ZERO_ADDRESS),
-            'ERR_INVALID_ADDRESS'
-        );
+        await expectRevert(contractRegistry.registerAddress(registry.CONTRACT_REGISTRY, ZERO_ADDRESS),
+            'ERR_INVALID_ADDRESS');
     });
 
     it('should revert when a non owner attempts to register a contract address', async () => {
-        await expectRevert(
-            contractRegistry.registerAddress(contractName1bytes, address1, { from: nonOwner }),
-            'ERR_ACCESS_DENIED'
-        );
+        await expectRevert(contractRegistry.registerAddress(contractName1bytes, address1, { from: nonOwner }),
+            'ERR_ACCESS_DENIED');
     });
 
     it('verifies that the contract name list gets updated correctly when registering addresses', async () => {
@@ -87,10 +83,7 @@ contract('ContractRegistry', (accounts) => {
         const address = await contractRegistry.addressOf.call(contractName1bytes);
         expect(address).to.eql(address1);
 
-        await expectRevert(
-            contractRegistry.unregisterAddress(contractName1bytes, { from: nonOwner }),
-            'ERR_ACCESS_DENIED'
-        );
+        await expectRevert(contractRegistry.unregisterAddress(contractName1bytes, { from: nonOwner }), 'ERR_ACCESS_DENIED');
     });
 
     it('verifies that the contract name list gets updated correctly when unregistering addresses', async () => {
@@ -150,14 +143,11 @@ contract('ContractRegistry', (accounts) => {
         await contractRegistry.registerAddress(contractName2bytes, address2);
         await contractRegistry.registerAddress(contractName3bytes, address3);
 
-        expect(await contractRegistry.getAddress.call(contractName1bytes)).to.eql(
-            await contractRegistry.addressOf.call(contractName1bytes)
-        );
-        expect(await contractRegistry.getAddress.call(contractName2bytes)).to.eql(
-            await contractRegistry.addressOf.call(contractName2bytes)
-        );
-        expect(await contractRegistry.getAddress.call(contractName3bytes)).to.eql(
-            await contractRegistry.addressOf.call(contractName3bytes)
-        );
+        expect(await contractRegistry.getAddress.call(contractName1bytes)).to
+            .eql(await contractRegistry.addressOf.call(contractName1bytes));
+        expect(await contractRegistry.getAddress.call(contractName2bytes)).to
+            .eql(await contractRegistry.addressOf.call(contractName2bytes));
+        expect(await contractRegistry.getAddress.call(contractName3bytes)).to
+            .eql(await contractRegistry.addressOf.call(contractName3bytes));
     });
 });

@@ -9,11 +9,7 @@ contract OldConverter {
         amount = _amount;
     }
 
-    function getReturn(
-        IERC20Token _sourceToken,
-        IERC20Token _targetToken,
-        uint256 _amount
-    ) external view returns (uint256) {
+    function getReturn(IERC20Token _sourceToken, IERC20Token _targetToken, uint256 _amount) external view returns (uint256) {
         _sourceToken;
         _targetToken;
         _amount;
@@ -30,11 +26,7 @@ contract NewConverter {
         fee = _fee;
     }
 
-    function getReturn(
-        IERC20Token _sourceToken,
-        IERC20Token _targetToken,
-        uint256 _amount
-    ) external view returns (uint256, uint256) {
+    function getReturn(IERC20Token _sourceToken, IERC20Token _targetToken, uint256 _amount) external view returns (uint256, uint256) {
         _sourceToken;
         _targetToken;
         _amount;
@@ -42,10 +34,12 @@ contract NewConverter {
     }
 }
 
-contract ConverterV27OrLowerWithoutFallback {}
+contract ConverterV27OrLowerWithoutFallback {
+}
 
 contract ConverterV27OrLowerWithFallback {
-    receive() external payable {}
+    receive() external payable {
+    }
 }
 
 contract ConverterV28OrHigherWithoutFallback {

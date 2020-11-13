@@ -2,6 +2,7 @@
 pragma solidity 0.6.12;
 import "../utility/ReentrancyGuard.sol";
 
+
 contract TestReentrancyGuardAttacker {
     TestReentrancyGuard public target;
     bool public reentrancy;
